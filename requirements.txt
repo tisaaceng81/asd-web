@@ -1,0 +1,12 @@
+flask
+flask_sqlalchemy
+flask_login
+flask_wtf
+wtforms
+control
+matplotlib
+numpy
+sympy
+pillow
+customtkinter
+gunicorn
