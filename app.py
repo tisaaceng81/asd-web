@@ -29,6 +29,24 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+        # Cria e aprova admin automaticamente
+        admin_email = 'tisaaceng@gmail.com'
+        admin_senha = '4839AT81'
+        admin = Usuario.query.filter_by(email=admin_email).first()
+
+        if not admin:
+            admin = Usuario(
+                email=admin_email,
+                senha_hash=generate_password_hash(admin_senha),
+                aprovado=True
+            )
+            db.session.add(admin)
+        else:
+            admin.aprovado = True
+            admin.senha_hash = generate_password_hash(admin_senha)
+
+        db.session.commit()
+
     @app.route('/', methods=['GET', 'POST'])
     def login():
         if request.method == 'POST':
@@ -95,7 +113,7 @@ def create_app():
             return redirect(url_for('login'))
 
         usuario = Usuario.query.get(session['user_id'])
-        if not usuario or usuario.email != 'admin@seusite.com':
+        if not usuario or usuario.email != 'tisaaceng@gmail.com':
             flash('Acesso negado.', 'danger')
             return redirect(url_for('dashboard'))
 
