@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <a class="logout" href="{{ url_for('logout') }}">Sair</a>
+    <h2>Sistema de Análise</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flash-messages">
+          {% for category, message in messages %}
+            <li class="flash {{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <textarea name="equacao" placeholder="Digite a equação diferencial" required>{{ eq_diff or '' }}</textarea>
+        <input type="text" name="entrada" placeholder="Entrada (ex: u)" required value="{{ var_entrada or '' }}">
+        <input type="text" name="saida" placeholder="Saída (ex: y)" required value="{{ var_saida or '' }}">
+        <select name="metodo_sintonia" required>
+            <option value="zn" {% if metodo_sintonia == 'zn' %}selected{% endif %}>Ziegler-Nichols</option>
+            <!-- Adicione outros métodos no futuro -->
+        </select>
+        <button type="submit">Analisar</button>
+    </form>
+
+    {% if resultados %}
+    <div class="dashboard-results">
+        <h3>Resultado</h3>
+        <pre>
+Função de Transferência Aberta:
+{{ resultados.ft_aberta }}
+
+Constantes:
+L = {{ resultados.L | round(4) }}
+T = {{ resultados.T | round(4) }}
+
+Controlador PID:
+Kp = {{ resultados.Kp | round(4) }}
+Ki = {{ resultados.Ki | round(4) }}
+Kd = {{ resultados.Kd | round(4) }}
+
+Função de Transferência Fechada:
+$$ {{ resultados.ft_fechada_latex }} $$
+        </pre>
+        <img src="data:image/png;base64,{{ resultados.imagem_blocos }}" alt="Diagrama de blocos">
+    </div>
+    {% endif %}
+</div>
+
+<!-- MathJax para equações -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>

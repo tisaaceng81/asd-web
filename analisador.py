@@ -1,16 +1,18 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # Usa backend que não exige display (ideal para Render)
 import matplotlib.pyplot as plt
 import sympy as sp
 from sympy import symbols, simplify
 from control.matlab import tf, step
 from io import BytesIO
+import io
 import base64
 
 def sobrescrito(numero):
     """Converte um número inteiro para sobrescrito unicode para exibição."""
-    subscritos = str.maketrans("0123456789-+", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺")
-    return str(numero).translate(subscritos)
-
+    sobrescritos = str.maketrans("0123456789-+", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺")
+    return str(numero).translate(sobrescritos)
 def formatar_funcao_transferencia(num, den):
     """
     Retorna string formatada com barra horizontal, expoentes sobrescritos e "." no lugar de "*".
@@ -24,7 +26,8 @@ def formatar_funcao_transferencia(num, den):
             pot = grau - i
             coef_str = f"{abs(coef):g}"
             if pot > 1:
-                pot_str = f"s{superscrito(pot)}"
+                pot_str = f"s{sobrescrito(pot)}"
+
             elif pot == 1:
                 pot_str = "s"
             else:
@@ -95,18 +98,21 @@ def funcao_transferencia_malha_fechada(G_open, pid):
 
 def gerar_diagrama_blocos(Kp, Ki, Kd, L, T):
     fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+    # Malha Aberta
     axs[0].axis('off')
     axs[0].set_title("Malha Aberta")
     axs[0].text(0.5, 0.5, f"L = {L:.3f}\nT = {T:.3f}", fontsize=12, ha='center', va='center')
+    # Malha Fechada
     axs[1].axis('off')
     axs[1].set_title("Malha Fechada")
     axs[1].text(0.5, 0.5, f"Kp = {Kp:.3f}\nKi = {Ki:.3f}\nKd = {Kd:.3f}", fontsize=12, ha='center', va='center')
-    buf = BytesIO()
+    buf = io.BytesIO()
     plt.tight_layout()
     plt.savefig(buf, format='png')
-    plt.close(fig)
     buf.seek(0)
-    return base64.b64encode(buf.getvalue()).decode('utf-8')
+    imagem_base64 = base64.b64encode(buf.read()).decode('utf-8')
+    plt.close(fig)
+    return imagem_base64
 
 def analisar_sistema(equacao_diferencial, entrada, saida, metodo_sintonia):
     """

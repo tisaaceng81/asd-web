@@ -8,5 +8,4 @@ matplotlib
 numpy
 sympy
 pillow
-customtkinter
 gunicorn
